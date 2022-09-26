@@ -2,6 +2,9 @@ from datetime import datetime
 import threading
 from .log import *
 
+def output (message:Log) :
+	print(format_message(message))
+
 def format_message (log:Log) -> str :
 	
 	origins = log.message.split("\n")
