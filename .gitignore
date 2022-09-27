@@ -1,2 +1,10 @@
-__run/
+
+# project working dir
+__run__/
+
+# project IDE configuration
+.vscode/*
+
+# python toolchain auto-generated
 **__pycache__
+poetry.lock

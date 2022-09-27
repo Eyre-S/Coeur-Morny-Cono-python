@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "morny-coeur-python"
+version = "0.1+coeur0.7.2.1"
+description = "A Coeur-Morny-Cono rewrite by python3"
+authors = ["Eyre_S <sukazyo@outlook.com>"]
+readme = "README.md"
+packages = [{include = "morny_coeur_python"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+python-telegram-bot = "^13.14"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

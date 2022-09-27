@@ -1,9 +1,19 @@
 from datetime import datetime
 import threading
+
+from define import Coeur_Def
 from .log import *
 
+if Coeur_Def.is_file_logging() :
+	log_file_archive = open(f"./logs/{time.strftime('%Y-%m-%d-%H:%M:%S.log', time.localtime())}", "x")
+	log_file = open("./log__latest.log", "a")
+
 def output (message:Log) :
-	print(format_message(message))
+	echo = format_message(message)
+	print(echo)
+	if Coeur_Def.is_file_logging() :
+		log_file.write(echo+"\n")
+		log_file_archive.write(echo+"\n")
 
 def format_message (log:Log) -> str :
 	
