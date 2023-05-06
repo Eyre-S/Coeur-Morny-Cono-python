@@ -1,7 +1,7 @@
 from datetime import datetime
 import threading
 
-from define import Coeur_Def
+from morny.define import Coeur_Def
 from .log import *
 
 if Coeur_Def.is_file_logging() :

@@ -1,6 +1,5 @@
 import os
 
-
 class Coeur_Def :
 	'''Morny Coeur python 程序以及当前的版本的元信息'''
 	
