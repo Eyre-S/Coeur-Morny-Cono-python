@@ -6,5 +6,5 @@ __run__/
 .vscode/*
 
 # python toolchain auto-generated
+.venv/
 **__pycache__
-poetry.lock
