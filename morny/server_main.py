@@ -1,9 +1,14 @@
 import os
 import sys
 import threading
-from morny.define import Coeur_Def
-from logger.logger import *
+from morny.util.str import strm
+
+from morny.morny_system import Coeur_Def
+from morny import log
+from morny.log import logger
 from morny.morny_hello import morny_hello_text
+from morny.morny_config import MornyConfigPrototype
+
 
 thread_morny_init = "morny-init"
 prop_name_token_tg_key = "TELEGRAM_BOT_API_TOKEN"
@@ -14,120 +19,126 @@ def main():
 	##
 	##
 	## 启动参数的声明
+	_config: MornyConfigPrototype = MornyConfigPrototype()
+	_printmode_version: bool = False
+	_printmode_hello: bool = False
+	_showHello: bool = True
 	
-	versionEchoMode:bool = False
-	welcomeEchoMode:bool = False
-	showWelcome:bool = True
-	key:str|None = None
-	username:str|None = None;
-	outdatedBlock:bool = False
-	master:int = 793274677
-	trustedReadersOfDinner:set = set()
-	trustedChat:int = -1001541451710
-	autoCmdList:bool = False
-	autoCmdRemove:bool = False
-	api:str|None = None
-	api4File:str|None = None
-	
+	# Todo: set startup time
 	
 	##
 	##
 	## 从命令行与环境变量读取启动参数值
-	
-	i = 1;
-	while (i < len(sys.argv)) :
+	__i = 1;
+	_unknownArgs: list[str] = []
+	while (__i < len(sys.argv)) :
 		
-		if (sys.argv[i].startswith("-")):
+		if (sys.argv[__i].startswith("-")):
 			
-			match sys.argv[i] :
+			match sys.argv[__i] :
+				case "-d" | "--dbg", "--debug":
+					log.set_debug_mode(True)
+					__i+=1;continue
 				case "--outdated-block" | "-ob" :
-					outdatedBlock = True
-					i+=1;continue
+					_config.eventIgnoreOutdated = True
+					__i+=1;continue
 				case "--no-hello" | "-hf" | "--quiet" | "-q" :
-					showWelcome = False
-					i+=1;continue
+					_showHello = False
+					__i+=1;continue
 				case "--only-hello" | "-ho" | "-o" | "-hi" :
-					welcomeEchoMode = True
-					i+=1;continue
+					_printmode_hello = True
+					__i+=1;continue
 				case "--version" | "-v" :
-					versionEchoMode = True
-					i+=1;continue
+					_printmode_version = True
+					__i+=1;continue
 				case "--token" | "-t" :
-					i+=1; key = sys.argv[i]
-					i+=1;continue
+					__i+=1; _config.telegram_bot_key = sys.argv[__i]
+					__i+=1;continue
 				case "--username" | "-u" :
-					i+=1; username = sys.argv[i]
-					i+=1;continue
+					__i+=1; _config.telegram_bot_username = sys.argv[__i]
+					__i+=1;continue
 				case "--master" | "-mm" :
-					i+=1; master = int(sys.argv[i])
-					i+=1;continue
+					__i+=1; _config.trusted_master = int(sys.argv[__i])
+					__i+=1;continue
 				case "--trusted-chat" | "-trs" :
-					i+=1; trustedChat = int(sys.argv[i])
-					i+=1;continue
+					__i+=1; _config.trusted_master = int(sys.argv[__i])
+					__i+=1;continue
 				case "--trusted-reader-dinner" | "-trsd" :
-					i+=1; trustedReadersOfDinner.add(int(sys.argv[i]))
-					i+=1;continue
+					__i+=1; _config.trusted_dinnerReaders.add(int(sys.argv[__i]))
+					__i+=1;continue
 				case "--auto-cmd" | "-cmd" | "-c" :
-					autoCmdList = True
-					autoCmdRemove = True
-					i+=1;continue
+					_config.commandRefresh_onLogin = True
+					_config.commandRefresh_onLogout = True
+					__i+=1;continue
 				case "--auto-cmd-list" | "-ca" :
-					autoCmdList = True
-					i+=1;continue
+					_config.commandRefresh_onLogin = True
+					__i+=1;continue
 				case "--auto-cmd-remove" | "-cr" :
-					autoCmdRemove = True
-					i+=1;continue
+					_config.commandRefresh_onLogout = True
+					__i+=1;continue
 				case "--api" | "-a" :
-					i+=1; api = sys.argv[i]
-					i+=1;continue
+					__i+=1; _config.telegram_botApi_server = sys.argv[__i]
+					__i+=1;continue
 				case "--api-files" | "files-api" | "-af" :
-					i+=1; api4File = sys.argv[i]
-					i+=1;continue
+					__i+=1; _config.telegram_botApi_server4File = sys.argv[__i]
+					__i+=1;continue
 		
-		warn(f"Can't understand arg to some meaning :\n  {sys.argv[i]}")
-		i+=1
+		_unknownArgs.append(sys.argv[__i])
+		__i+=1
 		
+	
+	if (_showHello):
+		logger.info(morny_hello_text())
+	if (_printmode_hello):
+		exit(0)
+	
+	if (_unknownArgs.count != 0):
+		logger.warn("Can't understand arg to some meaning :")
+		for __arg in _unknownArgs:
+			logger.warn(f"  {__arg}")
+	
+	if (logger.debug_mode):
+		logger.warn("Debug log output enabled.\n  It may lower your performance, make sure that you are not in production environment.")
+	logger.debug("Debug log output enabled.")
 	
 	'''从系统环境变量设置的 bot token 值'''
-	propToken:str|None = None
+	_propToken:str|None = None
 	'''表明 bot token 值的来源是哪个系统环境变量'''
-	propTokenKey:str|None = None
-	
-	for iKey in [prop_name_token_tg_key, prop_name_token_morny_key] :
-		if (os.getenv(iKey) != None) :
-			propToken = os.getenv(iKey)
-			propTokenKey = iKey
+	_propToken_key:str|None = None
+	for __key in [prop_name_token_tg_key, prop_name_token_morny_key] :
+		if (os.getenv(__key) != None) :
+			_propToken = os.getenv(__key)
+			_propToken_key = __key
 	
 	##
 	##
 	## 启动参数的检查和处理
 	
-	if versionEchoMode :
-		info(f"""Morny Cono Version
-	- version :
-	    {Coeur_Def.VERSION}  {Coeur_Def.CODE.upper()}
-	- md5hash :
-	    <unavailable_in_python_implementation>
-	- rw.time :
-	    {Coeur_Def.TIMETAG} [UTC+8]"""
-	); exit()
-	
-	if showWelcome : info(morny_hello_text())
-	if welcomeEchoMode : exit()
+	if _printmode_version :
+		logger.info(strm(
+			f"Morny Cono Version",
+			f"- version :",
+			f"    {Coeur_Def.VERSION}  {Coeur_Def.CODE.upper()}",
+			f"- md5hash :",
+			f"    <unavailable_in_python_implementation>",
+			f"- rw.time :",
+			f"    {Coeur_Def.TIMETAG} [UTC+8]",
+		));
+		exit()
 
-	info(f"""morny/server_main.py Executed >>>
-	- version {Coeur_Def.VERSION} [{Coeur_Def.TIMETAG}]
-	- Morny {Coeur_Def.CODE.upper()}""")
+	logger.info(strm(
+		f"morny/server_main.py Executed >>>",
+		f"- version {Coeur_Def.VERSION} [{Coeur_Def.TIMETAG}]",
+		f"- Morny {Coeur_Def.CODE.upper()}",
+	))
 	
 	##
 	##
 	## Coeur 参数检查以及正式呼叫主程序
 	
-	if (propToken != None) :
-		key = propToken
-		info(f"Parameter <token> set by EnvVar ${propTokenKey}")
-	if (key == None) :
-		info("Parameter required has no value:\n --token.")
-		exit()
+	if (_propToken != None) :
+		logger.info(f"Parameter <token> set by EnvVar ${_propToken_key}")
+	
 	threading.current_thread().name = thread_morny_init
-	#todo call coeur main
+	
+	#todo: call coeur main
