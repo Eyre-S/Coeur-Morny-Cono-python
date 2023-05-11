@@ -4,11 +4,14 @@ version = "0.1.2+coeur1.0.0-RC3.7"
 description = "A Coeur-Morny-Cono rewrite by python3"
 authors = ["Eyre_S <sukazyo@outlook.com>"]
 readme = "README.md"
-packages = [{include = "morny_coeur_python"}]
+packages = [
+	{include = "morny"}
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
 python-telegram-bot = "^13.14"
+pyssage = { git = "https://github.com/suk-ws/pyssage", tag="0.1.0" }
 
 
 [build-system]

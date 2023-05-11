@@ -1,35 +1,21 @@
-from logger import logger as logger_impl
+from pyssage.components.restrictions import RestrictionToLog, LevelRestriction
+from pyssage.appender import ConsoleAppender
+from pyssage.formatter import SimpleFormatter
+from pyssage.log.log import levels
+from pyssage.logger import Logger
 
-class logger:
-	
-	debug_mode: bool = False
-	
-	@staticmethod
-	def trace (msg: str):
-		if (logger.debug_mode):
-			logger_impl.trace(msg)
-	
-	@staticmethod
-	def debug (msg: str):
-		if (logger.debug_mode):
-			logger_impl.debug(msg)
-	
-	@staticmethod
-	def info (msg: str):
-		logger_impl.info(msg)
-	
-	@staticmethod
-	def warn (msg: str):
-		logger_impl.warn(msg)
-	
-	@staticmethod
-	def error (msg: str):
-		logger_impl.error(msg)
-	
-	@staticmethod
-	def fatal (msg: str):
-		logger_impl.fatal(msg)
-	
+
+restriction: RestrictionToLog = LevelRestriction(levels.INFO)
+
+logger: Logger = Logger(ConsoleAppender(SimpleFormatter()))
+logger.restrictions.append(restriction)
+
 
 def set_debug_mode(mode: bool):
-	logger.debug_mode = mode
+	if mode:
+		restriction.min_level = levels.ALL
+	else:
+		restriction.min_level = levels.INFO
+
+def is_debug_mode () -> bool:
+	return restriction.min_level < levels.INFO

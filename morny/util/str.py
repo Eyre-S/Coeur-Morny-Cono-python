@@ -5,15 +5,3 @@ def strm(*strs: str) -> str:
 		output += "\n"
 	output += strs[len(strs)-1]
 	return output
-
-# test for this
-if __name__ == "__main__":
-	
-	print(strm(
-		"Aaa",
-		"  bbb",
-		"  ccc",
-		"Xxx",
-		"  yyy"
-	))
-	

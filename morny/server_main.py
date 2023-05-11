@@ -97,7 +97,7 @@ def main():
 		for __arg in _unknownArgs:
 			logger.warn(f"  {__arg}")
 	
-	if (logger.debug_mode):
+	if (log.is_debug_mode()):
 		logger.warn("Debug log output enabled.\n  It may lower your performance, make sure that you are not in production environment.")
 	logger.debug("Debug log output enabled.")
 	
